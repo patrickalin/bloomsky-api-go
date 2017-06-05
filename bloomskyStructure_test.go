@@ -3,6 +3,7 @@ package bloomskyStructure
 import (
 	"os"
 	"testing"
+	"time"
 
 	mylog "github.com/patrickalin/GoMyLog"
 )
@@ -19,17 +20,33 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetCity(t *testing.T) {
-
-	t.Log("City Thuin")
 	if city := mybloomsky.GetCity(); city != "Thuin" {
 		t.Errorf("Expected Thuin, but it was %s instead.", city)
 	}
 }
 
 func TestDeviceId(t *testing.T) {
-
-	t.Log("DevideID 442C05954A59 ")
 	if city := mybloomsky.GetDeviceID(); city != "442C05954A59" {
 		t.Errorf("Expected 442C05954A59, but it was %s instead.", city)
+	}
+}
+
+func TestTimestamp(t *testing.T) {
+	if tt := mybloomsky.GetTimeStamp().Truncate(time.Minute); tt.Equal(time.Date(
+		2017, 06, 01, 21, 26, 0, 0, time.UTC).Truncate(time.Minute)) {
+		t.Errorf("Expected %s, but it was %s instead.", time.Date(
+			2017, 06, 01, 19, 26, 0, 0, time.UTC).Truncate(time.Minute), tt)
+	}
+}
+
+func TestNbrFollowers(t *testing.T) {
+	if f := mybloomsky.GetNumOfFollowers(); f != 2 {
+		t.Errorf("Expected 2, but it was %d instead.", f)
+	}
+}
+
+func TestUV(t *testing.T) {
+	if uv := mybloomsky.GetIndexUV(); uv != "1" {
+		t.Errorf("Expected 1, but it was %s instead.", uv)
 	}
 }
