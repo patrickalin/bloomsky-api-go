@@ -8,6 +8,8 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/patrickalin/bloomsky-api-go/badge.svg)](https://coveralls.io/github/patrickalin/bloomsky-api-go)
 
+[![GoDoc](http://godoc.org/github.com/patrickalin/bloomsky-api-go?status.svg)](http://godoc.org/github.com/patrickalin/bloomsky-api-go)
+
 A simple BloomSky API.
 
 ### License
