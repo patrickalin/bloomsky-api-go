@@ -10,8 +10,14 @@
 
 [![GoDoc](http://godoc.org/github.com/patrickalin/bloomsky-api-go?status.svg)](http://godoc.org/github.com/patrickalin/bloomsky-api-go)
 
-A simple BloomSky API.
+## Package BloomskyStructure
 
-### License
+The BloomskyStructure package provides APIs for bloomsky device.
+
+## Bloomsky Client Go
+
+If you want, I have a [runtime client](https://github.com/patrickalin/bloomsky-client-go) which uses this API. 
+
+## License
 
 The code is licensed under the permissive Apache v2.0 licence. This means you can do what you like with the software, as long as you include the required notices. [Read this](https://tldrlegal.com/license/apache-license-2.0-(apache-2.0)) for a summary.
