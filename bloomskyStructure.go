@@ -4,10 +4,10 @@ package bloomskyStructure
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
-	mylog "github.com/patrickalin/GoMyLog"
-	rest "github.com/patrickalin/GoRest"
+	rest "github.com/patrickalin/myrest-go"
 )
 
 // BloomskyStructure represents the structure of the JSON return by the API
@@ -75,13 +75,22 @@ type bloomskyStructure interface {
 	ShowPrettyAll() int
 }
 
+var debug = false
+
+//DebugOn : display some information
+func DebugOn() {
+	debug = true
+}
+
 // ShowPrettyAll prints to the console the JSON
 func (bloomskyInfo BloomskyStructure) ShowPrettyAll() {
 	out, err := json.Marshal(bloomskyInfo)
 	if err != nil {
-		mylog.Error.Fatal(fmt.Errorf("Error with parsing Json"))
+		log.Fatal(fmt.Errorf("Error with parsing Json"))
 	}
-	mylog.Trace.Printf("Decode:> \n %s \n\n", out)
+	if debug {
+		fmt.Printf("Decode:> \n %s \n\n", out)
+	}
 }
 
 //GetTimeStamp returns the timestamp give by Bloomsky
@@ -235,7 +244,7 @@ func NewBloomskyFromBody(body []byte) BloomskyStructure {
 	var bloomskyInfo []BloomskyStructure
 	//fmt.Println("Unmarshal the response")
 	if err := json.Unmarshal(body, &bloomskyInfo); err != nil {
-		mylog.Error.Fatal(fmt.Errorf("Problem with json to struct, problem in the struct %v?", err))
+		log.Fatal(fmt.Errorf("Problem with json to struct, problem in the struct %v?", err))
 	}
 
 	bloomskyInfo[0].ShowPrettyAll()
