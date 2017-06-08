@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
+	"os"
 	"time"
 
 	rest "github.com/patrickalin/myrest-go"
@@ -36,29 +38,38 @@ type BloomskyStructure struct {
 
 // BloomskyStormStructure represents the structure STORM of the JSON return by the API
 type BloomskyStormStructure struct {
-	UVIndex            string  `json:"UVIndex"`
-	WindDirection      string  `json:"WindDirection"`
-	RainDaily          float64 `json:"RainDaily"`
-	WindGust           float64 `json:"WindGust"`
-	SustainedWindSpeed float64 `json:"SustainedWindSpeed"`
-	RainRate           float64 `json:"RainRate"`
-	Rain               float64 `json:"24hRain"`
+	UVIndex               string  `json:"UVIndex"`
+	WindDirection         string  `json:"WindDirection"`
+	WindGust              float64 `json:"WindGust"`
+	SustainedWindSpeed    float64 `json:"SustainedWindSpeed"`
+	WindGustms            float64
+	SustainedWindSpeedms  float64
+	WindGustkmh           float64
+	SustainedWindSpeedkmh float64
+	Rain                  float64
+	RainDaily             float64 `json:"RainDaily"`
+	RainDailymm           float64
+	RainRate              float64 `json:"RainRate"`
+	RainRatemm            float64
+	Rainin                float64 `json:"24hRain"`
 }
 
 // BloomskyDataStructure represents the structure SKY of the JSON return by the API
 type BloomskyDataStructure struct {
-	Luminance   float64 `json:"Luminance"`
-	Temperature float64 `json:"Temperature"`
-	ImageURL    string  `json:"ImageURL"`
-	TS          float64 `json:"TS"`
-	Rain        bool    `json:"Rain"`
-	Humidity    float64 `json:"Humidity"`
-	Pressure    float64 `json:"Pressure"`
-	DeviceType  string  `json:"DeviceType"`
-	Voltage     float64 `json:"Voltage"`
-	Night       bool    `json:"Night"`
-	UVIndex     float64 `json:"UVIndex"`
-	ImageTS     float64 `json:"ImageTS"`
+	Luminance    float64 `json:"Luminance"`
+	TemperatureF float64 `json:"Temperature"`
+	TemperatureC float64
+	ImageURL     string  `json:"ImageURL"`
+	TS           float64 `json:"TS"`
+	Rain         bool    `json:"Rain"`
+	Humidity     float64 `json:"Humidity"`
+	Pressure     float64 `json:"Pressure"`
+	Pressurehpa  float64
+	DeviceType   string  `json:"DeviceType"`
+	Voltage      float64 `json:"Voltage"`
+	Night        bool    `json:"Night"`
+	UVIndex      float64 `json:"UVIndex"`
+	ImageTS      float64 `json:"ImageTS"`
 }
 
 // bloomskyStructure is the interface bloomskyStructure
@@ -76,11 +87,6 @@ type bloomskyStructure interface {
 }
 
 var debug = false
-
-//DebugOn : display some information
-func DebugOn() {
-	debug = true
-}
 
 // ShowPrettyAll prints to the console the JSON
 func (bloomskyInfo BloomskyStructure) ShowPrettyAll() {
@@ -126,12 +132,12 @@ func (bloomskyInfo BloomskyStructure) IsNight() bool {
 
 //GetTemperatureFahrenheit returns temperature in Fahrenheit
 func (bloomskyInfo BloomskyStructure) GetTemperatureFahrenheit() float64 {
-	return bloomskyInfo.Data.Temperature
+	return bloomskyInfo.Data.TemperatureF
 }
 
 //GetTemperatureCelsius returns temperature in Celsius
 func (bloomskyInfo BloomskyStructure) GetTemperatureCelsius() float64 {
-	return ((bloomskyInfo.Data.Temperature - 32.00) * 5.00 / 9.00)
+	return bloomskyInfo.Data.TemperatureC
 }
 
 //GetHumidity returns hulidity %
@@ -141,7 +147,7 @@ func (bloomskyInfo BloomskyStructure) GetHumidity() float64 {
 
 //GetPressureHPa returns pressure in HPa
 func (bloomskyInfo BloomskyStructure) GetPressureHPa() float64 {
-	return (bloomskyInfo.Data.Pressure * 33.8638815)
+	return bloomskyInfo.Data.Pressurehpa
 }
 
 //GetPressureInHg returns pressure in InHg
@@ -210,24 +216,30 @@ func (bloomskyInfo BloomskyStructure) GetRainRateMm() float64 {
 }
 
 // NewBloomsky calls bloomsky and get structurebloomsky
-func NewBloomsky(bloomskyURL, bloomskyToken string) BloomskyStructure {
+func NewBloomsky(bloomskyURL, bloomskyToken string, debug bool) BloomskyStructure {
 
 	var retry = 0
 	var duration = time.Minute * 5
 
+	if debug {
+		debug = true
+	}
+
 	// get body from Rest API
-	fmt.Printf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
+	if debug {
+		log.New(os.Stdout, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile).Printf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
+	}
 	myRest := rest.MakeNew()
 
 	b := []string{bloomskyToken}
 
-	var m map[string][]string
-	m = make(map[string][]string)
-	m["Authorization"] = b
+	var headers map[string][]string
+	headers = make(map[string][]string)
+	headers["Authorization"] = b
 
 	for retry < 5 {
-		if err := myRest.GetWithHeaders(bloomskyURL, m); err != nil {
-			fmt.Printf("Problem with call rest, check the URL and the secret ID in the config file %v", err)
+		if err := myRest.GetWithHeaders(bloomskyURL, headers); err != nil {
+			fmt.Printf("Problem with call rest, check the URL and the secret ID in the config file %v \n", err)
 			retry++
 			time.Sleep(duration)
 		} else {
@@ -246,8 +258,27 @@ func NewBloomskyFromBody(body []byte) BloomskyStructure {
 	if err := json.Unmarshal(body, &bloomskyInfo); err != nil {
 		log.Fatal(fmt.Errorf("Problem with json to struct, problem in the struct %v?", err))
 	}
+	bloomskyInfo[0].Data.TemperatureC = toFixed(((bloomskyInfo[0].Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
+	bloomskyInfo[0].Data.Pressurehpa = toFixed((bloomskyInfo[0].Data.Pressure * 33.8638815), 2)
+
+	bloomskyInfo[0].Storm.WindGustms = toFixed(bloomskyInfo[0].Storm.WindGust*0.44704, 2)
+	bloomskyInfo[0].Storm.WindGustkmh = toFixed(bloomskyInfo[0].Storm.WindGust*1.60934, 2)
+	bloomskyInfo[0].Storm.SustainedWindSpeedms = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*0.44704, 2)
+	bloomskyInfo[0].Storm.SustainedWindSpeedkmh = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*1.60934, 2)
+
+	bloomskyInfo[0].Storm.RainDailymm = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*25.4, 2)
+	bloomskyInfo[0].Storm.RainRatemm = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*25.4, 2)
 
 	bloomskyInfo[0].ShowPrettyAll()
 
 	return bloomskyInfo[0]
+}
+
+func round(num float64) int {
+	return int(num + math.Copysign(0.5, num))
+}
+
+func toFixed(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+	return float64(round(num*output)) / output
 }
