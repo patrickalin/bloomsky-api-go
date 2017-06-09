@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"os"
 	"time"
 
+	mylog "github.com/patrickalin/GoMyLog"
 	rest "github.com/patrickalin/myrest-go"
 )
 
@@ -41,10 +41,10 @@ type BloomskyStormStructure struct {
 	UVIndex               string  `json:"UVIndex"`
 	WindDirection         string  `json:"WindDirection"`
 	WindGust              float64 `json:"WindGust"`
-	SustainedWindSpeed    float64 `json:"SustainedWindSpeed"`
 	WindGustms            float64
-	SustainedWindSpeedms  float64
 	WindGustkmh           float64
+	SustainedWindSpeed    float64 `json:"SustainedWindSpeed"`
+	SustainedWindSpeedms  float64
 	SustainedWindSpeedkmh float64
 	Rain                  float64
 	RainDaily             float64 `json:"RainDaily"`
@@ -52,6 +52,7 @@ type BloomskyStormStructure struct {
 	RainRate              float64 `json:"RainRate"`
 	RainRatemm            float64
 	Rainin                float64 `json:"24hRain"`
+	Rainmm                float64
 }
 
 // BloomskyDataStructure represents the structure SKY of the JSON return by the API
@@ -192,7 +193,7 @@ func (bloomskyInfo BloomskyStructure) GetRainDailyIn() float64 {
 
 //GetRainIn returns total rain in In
 func (bloomskyInfo BloomskyStructure) GetRainIn() float64 {
-	return bloomskyInfo.Storm.Rain
+	return bloomskyInfo.Storm.Rainin
 }
 
 //GetRainRateIn returns rain in In
@@ -207,12 +208,22 @@ func (bloomskyInfo BloomskyStructure) GetRainDailyMm() float64 {
 
 //GetRainMm returns total rain in mm
 func (bloomskyInfo BloomskyStructure) GetRainMm() float64 {
-	return bloomskyInfo.Storm.Rain
+	return bloomskyInfo.Storm.Rainmm
 }
 
 //GetRainRateMm returns rain in mm
 func (bloomskyInfo BloomskyStructure) GetRainRateMm() float64 {
 	return bloomskyInfo.Storm.RainRate
+}
+
+//GetSustainedWindSpeedkmh returns Sustained Wind in Km/h
+func (bloomskyInfo BloomskyStructure) GetSustainedWindSpeedkmh() float64 {
+	return bloomskyInfo.Storm.SustainedWindSpeedkmh
+}
+
+//GetWindGustkmh returns Wind in Km/h
+func (bloomskyInfo BloomskyStructure) GetWindGustkmh() float64 {
+	return bloomskyInfo.Storm.WindGustkmh
 }
 
 // NewBloomsky calls bloomsky and get structurebloomsky
@@ -227,7 +238,7 @@ func NewBloomsky(bloomskyURL, bloomskyToken string, debug bool) BloomskyStructur
 
 	// get body from Rest API
 	if debug {
-		log.New(os.Stdout, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile).Printf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
+		mylog.Trace.Printf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
 	}
 	myRest := rest.MakeNew()
 
@@ -266,8 +277,9 @@ func NewBloomskyFromBody(body []byte) BloomskyStructure {
 	bloomskyInfo[0].Storm.SustainedWindSpeedms = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*0.44704, 2)
 	bloomskyInfo[0].Storm.SustainedWindSpeedkmh = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*1.60934, 2)
 
-	bloomskyInfo[0].Storm.RainDailymm = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*25.4, 2)
-	bloomskyInfo[0].Storm.RainRatemm = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*25.4, 2)
+	bloomskyInfo[0].Storm.RainDailymm = toFixed(bloomskyInfo[0].Storm.RainDaily*25.4, 2)
+	bloomskyInfo[0].Storm.RainRatemm = toFixed(bloomskyInfo[0].Storm.RainRate*25.4, 2)
+	bloomskyInfo[0].Storm.Rainmm = toFixed(bloomskyInfo[0].Storm.Rainin*25.4, 2)
 
 	bloomskyInfo[0].ShowPrettyAll()
 
