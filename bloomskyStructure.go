@@ -34,6 +34,7 @@ type BloomskyStructure struct {
 	FullAddress      string                 `json:"FullAddress"`
 	StreetName       string                 `json:"StreetName"`
 	PreviewImageList []string               `json:"PreviewImageList"`
+	LastCall         string
 }
 
 // BloomskyStormStructure represents the structure STORM of the JSON return by the API
@@ -282,6 +283,7 @@ func NewBloomskyFromBody(body []byte) BloomskyStructure {
 	bloomskyInfo[0].Storm.Rainmm = toFixed(bloomskyInfo[0].Storm.Rainin*25.4, 2)
 
 	bloomskyInfo[0].ShowPrettyAll()
+	bloomskyInfo[0].LastCall = time.Now().Format("2006-01-02 15:04:05")
 
 	return bloomskyInfo[0]
 }
