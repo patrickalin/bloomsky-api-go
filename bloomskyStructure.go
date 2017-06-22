@@ -3,13 +3,12 @@ package bloomskyStructure
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"math"
+	"os"
 	"time"
 
-	mylog "github.com/patrickalin/GoMyLog"
 	rest "github.com/patrickalin/myrest-go"
+	"github.com/sirupsen/logrus"
 )
 
 // BloomskyStructure represents the structure of the JSON return by the API
@@ -88,23 +87,32 @@ type bloomskyStructure interface {
 	ShowPrettyAll() int
 }
 
-var debug = false
+var log = logrus.New()
+
+func init() {
+	log.Formatter = new(logrus.JSONFormatter)
+	log.Formatter = new(logrus.TextFormatter)
+
+	file, err := os.OpenFile("bloomsky.log", os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Info("Failed to log to file, using default stderr")
+		return
+	}
+	log.Out = file
+}
 
 // ShowPrettyAll prints to the console the JSON
 func (bloomskyInfo BloomskyStructure) ShowPrettyAll() {
 	out, err := json.Marshal(bloomskyInfo)
 	if err != nil {
-		log.Fatal(fmt.Errorf("Error with parsing Json"))
+		log.Fatalf("Error with parsing Json")
 	}
-	if debug {
-		fmt.Printf("Decode:> \n %s \n\n", out)
-	}
+	log.Debugf("Decode:> \n", out)
 }
 
 //GetTimeStamp returns the timestamp give by Bloomsky
 func (bloomskyInfo BloomskyStructure) GetTimeStamp() time.Time {
-	tm := time.Unix(int64(bloomskyInfo.Data.TS), 0)
-	return tm
+	return time.Unix(int64(bloomskyInfo.Data.TS), 0)
 }
 
 //GetCity returns the city name
@@ -228,19 +236,10 @@ func (bloomskyInfo BloomskyStructure) GetWindGustkmh() float64 {
 }
 
 // NewBloomsky calls bloomsky and get structurebloomsky
-func NewBloomsky(bloomskyURL, bloomskyToken string, debug bool) BloomskyStructure {
-
-	var retry = 0
-	var duration = time.Minute * 5
-
-	if debug {
-		debug = true
-	}
+func NewBloomsky(bloomskyURL, bloomskyToken string) BloomskyStructure {
 
 	// get body from Rest API
-	if debug {
-		mylog.Trace.Printf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
-	}
+	logrus.Debugf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
 	myRest := rest.MakeNew()
 
 	b := []string{bloomskyToken}
@@ -249,11 +248,12 @@ func NewBloomsky(bloomskyURL, bloomskyToken string, debug bool) BloomskyStructur
 	headers = make(map[string][]string)
 	headers["Authorization"] = b
 
+	var retry = 0
 	for retry < 5 {
 		if err := myRest.GetWithHeaders(bloomskyURL, headers); err != nil {
-			fmt.Printf("Problem with call rest, check the URL and the secret ID in the config file %v \n", err)
+			log.Errorf("Problem with call rest, check the URL and the secret ID in the config file %v", err)
 			retry++
-			time.Sleep(duration)
+			time.Sleep(time.Minute * 5)
 		} else {
 			retry = 5
 		}
@@ -268,7 +268,7 @@ func NewBloomskyFromBody(body []byte) BloomskyStructure {
 	var bloomskyInfo []BloomskyStructure
 	//fmt.Println("Unmarshal the response")
 	if err := json.Unmarshal(body, &bloomskyInfo); err != nil {
-		log.Fatal(fmt.Errorf("Problem with json to struct, problem in the struct %v?", err))
+		log.Fatalf("Problem with json to struct, problem in the struct ? %v", err)
 	}
 	bloomskyInfo[0].Data.TemperatureC = toFixed(((bloomskyInfo[0].Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
 	bloomskyInfo[0].Data.Pressurehpa = toFixed((bloomskyInfo[0].Data.Pressure * 33.8638815), 2)
