@@ -89,25 +89,69 @@ type bloomskyStructure interface {
 
 var log = logrus.New()
 
-func init() {
+const logFile = "bloomskyapi.log"
+
+// NewBloomsky calls bloomsky and get structurebloomsky
+func NewBloomsky(bloomskyURL, bloomskyToken string) BloomskyStructure {
+
 	log.Formatter = new(logrus.JSONFormatter)
 	log.Formatter = new(logrus.TextFormatter)
 
-	file, err := os.OpenFile("bloomsky.log", os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Info("Failed to log to file, using default stderr")
-		return
+		logrus.Info("Failed to log to file, using default stderr")
+		return NewBloomskyFromBody(nil)
 	}
 	log.Out = file
+
+	// get body from Rest API
+	log.Debugf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
+	myRest := rest.MakeNew()
+
+	b := []string{bloomskyToken}
+
+	var headers map[string][]string
+	headers = make(map[string][]string)
+	headers["Authorization"] = b
+
+	var retry = 0
+	for retry < 5 {
+		if err := myRest.GetWithHeaders(bloomskyURL, headers); err != nil {
+			log.Errorf("Problem with call rest, check the URL and the secret ID in the config file %v", err)
+			retry++
+			time.Sleep(time.Minute * 5)
+		} else {
+			retry = 5
+		}
+	}
+
+	body := myRest.GetBody()
+	return NewBloomskyFromBody(body)
 }
 
-// ShowPrettyAll prints to the console the JSON
-func (bloomskyInfo BloomskyStructure) ShowPrettyAll() {
-	out, err := json.Marshal(bloomskyInfo)
-	if err != nil {
-		log.Fatalf("Error with parsing Json")
+// NewBloomskyFromBody to unit test with String
+func NewBloomskyFromBody(body []byte) BloomskyStructure {
+	var bloomskyInfo []BloomskyStructure
+	//fmt.Println("Unmarshal the response")
+	if err := json.Unmarshal(body, &bloomskyInfo); err != nil {
+		log.Fatalf("Problem with json to struct, problem in the struct ? %v", err)
 	}
-	log.Debugf("Decode:> \n", out)
+	bloomskyInfo[0].Data.TemperatureC = toFixed(((bloomskyInfo[0].Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
+	bloomskyInfo[0].Data.Pressurehpa = toFixed((bloomskyInfo[0].Data.Pressure * 33.8638815), 2)
+
+	bloomskyInfo[0].Storm.WindGustms = toFixed(bloomskyInfo[0].Storm.WindGust*0.44704, 2)
+	bloomskyInfo[0].Storm.WindGustkmh = toFixed(bloomskyInfo[0].Storm.WindGust*1.60934, 2)
+	bloomskyInfo[0].Storm.SustainedWindSpeedms = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*0.44704, 2)
+	bloomskyInfo[0].Storm.SustainedWindSpeedkmh = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*1.60934, 2)
+
+	bloomskyInfo[0].Storm.RainDailymm = toFixed(bloomskyInfo[0].Storm.RainDaily*25.4, 2)
+	bloomskyInfo[0].Storm.RainRatemm = toFixed(bloomskyInfo[0].Storm.RainRate*25.4, 2)
+	bloomskyInfo[0].Storm.Rainmm = toFixed(bloomskyInfo[0].Storm.Rainin*25.4, 2)
+
+	bloomskyInfo[0].ShowPrettyAll()
+	bloomskyInfo[0].LastCall = time.Now().Format("2006-01-02 15:04:05")
+
+	return bloomskyInfo[0]
 }
 
 //GetTimeStamp returns the timestamp give by Bloomsky
@@ -150,7 +194,7 @@ func (bloomskyInfo BloomskyStructure) GetTemperatureCelsius() float64 {
 	return bloomskyInfo.Data.TemperatureC
 }
 
-//GetHumidity returns hulidity %
+//GetHumidity returns humidity %
 func (bloomskyInfo BloomskyStructure) GetHumidity() float64 {
 	return bloomskyInfo.Data.Humidity
 }
@@ -235,59 +279,6 @@ func (bloomskyInfo BloomskyStructure) GetWindGustkmh() float64 {
 	return bloomskyInfo.Storm.WindGustkmh
 }
 
-// NewBloomsky calls bloomsky and get structurebloomsky
-func NewBloomsky(bloomskyURL, bloomskyToken string) BloomskyStructure {
-
-	// get body from Rest API
-	logrus.Debugf("Get from Rest bloomsky API %s %s", bloomskyURL, bloomskyToken)
-	myRest := rest.MakeNew()
-
-	b := []string{bloomskyToken}
-
-	var headers map[string][]string
-	headers = make(map[string][]string)
-	headers["Authorization"] = b
-
-	var retry = 0
-	for retry < 5 {
-		if err := myRest.GetWithHeaders(bloomskyURL, headers); err != nil {
-			log.Errorf("Problem with call rest, check the URL and the secret ID in the config file %v", err)
-			retry++
-			time.Sleep(time.Minute * 5)
-		} else {
-			retry = 5
-		}
-	}
-
-	body := myRest.GetBody()
-	return NewBloomskyFromBody(body)
-}
-
-// NewBloomskyFromBody to unit test with String
-func NewBloomskyFromBody(body []byte) BloomskyStructure {
-	var bloomskyInfo []BloomskyStructure
-	//fmt.Println("Unmarshal the response")
-	if err := json.Unmarshal(body, &bloomskyInfo); err != nil {
-		log.Fatalf("Problem with json to struct, problem in the struct ? %v", err)
-	}
-	bloomskyInfo[0].Data.TemperatureC = toFixed(((bloomskyInfo[0].Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
-	bloomskyInfo[0].Data.Pressurehpa = toFixed((bloomskyInfo[0].Data.Pressure * 33.8638815), 2)
-
-	bloomskyInfo[0].Storm.WindGustms = toFixed(bloomskyInfo[0].Storm.WindGust*0.44704, 2)
-	bloomskyInfo[0].Storm.WindGustkmh = toFixed(bloomskyInfo[0].Storm.WindGust*1.60934, 2)
-	bloomskyInfo[0].Storm.SustainedWindSpeedms = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*0.44704, 2)
-	bloomskyInfo[0].Storm.SustainedWindSpeedkmh = toFixed(bloomskyInfo[0].Storm.SustainedWindSpeed*1.60934, 2)
-
-	bloomskyInfo[0].Storm.RainDailymm = toFixed(bloomskyInfo[0].Storm.RainDaily*25.4, 2)
-	bloomskyInfo[0].Storm.RainRatemm = toFixed(bloomskyInfo[0].Storm.RainRate*25.4, 2)
-	bloomskyInfo[0].Storm.Rainmm = toFixed(bloomskyInfo[0].Storm.Rainin*25.4, 2)
-
-	bloomskyInfo[0].ShowPrettyAll()
-	bloomskyInfo[0].LastCall = time.Now().Format("2006-01-02 15:04:05")
-
-	return bloomskyInfo[0]
-}
-
 func round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
 }
@@ -295,4 +286,13 @@ func round(num float64) int {
 func toFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(round(num*output)) / output
+}
+
+// ShowPrettyAll prints to the console the JSON
+func (bloomskyInfo BloomskyStructure) ShowPrettyAll() {
+	out, err := json.Marshal(bloomskyInfo)
+	if err != nil {
+		log.Fatalf("Error with parsing Json")
+	}
+	log.Debugf("Decode:> \n", out)
 }
