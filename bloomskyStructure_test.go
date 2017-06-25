@@ -3,15 +3,14 @@ package bloomskyStructure
 import (
 	"io/ioutil"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-var mybloomskyTest1 BloomskyStructure
-var mybloomskyTest2 BloomskyStructure
+var mybloomskyTest1 Bloomsky
+var mybloomskyTest2 Bloomsky
 
 const testFile1 = "testCase/test1.json"
 const testFile2 = "testCase/test2.json"
@@ -19,36 +18,28 @@ const testFile2 = "testCase/test2.json"
 func readTestFile(fMock string) []byte {
 	testFile, err := ioutil.ReadFile(fMock)
 	if err != nil {
-		logrus.Fatalf("Error in reading the file %s Err:  %v", fMock, err)
+		log.WithFields(logrus.Fields{
+			"file": fMock,
+			"msg":  err,
+		}).Fatal("Error reading the file")
+
 	}
 	return testFile
 }
 
 func TestMain(m *testing.M) {
-	mybloomskyTest1 = NewBloomskyFromBody(readTestFile(testFile1))
-	mybloomskyTest2 = NewBloomskyFromBody(readTestFile(testFile2))
 
+	mybloomskyTest1 = New("", "", nil)
+	mybloomskyTest1.RefreshFromBody(readTestFile(testFile1))
+	mybloomskyTest2 = New("", "", nil)
+	mybloomskyTest2.RefreshFromBody(readTestFile(testFile2))
 	os.Exit(m.Run())
-}
-
-func TestTimestamp(t *testing.T) {
-	if tt := mybloomskyTest1.GetTimeStamp().Truncate(time.Minute); tt.Equal(time.Date(
-		2017, 06, 01, 21, 26, 0, 0, time.UTC).Truncate(time.Minute)) {
-		t.Errorf("Expected %s, but it was %s instead.", time.Date(
-			2017, 06, 01, 19, 26, 0, 0, time.UTC).Truncate(time.Minute), tt)
-	}
-}
-
-func TestNbrFollowers(t *testing.T) {
-	if f := mybloomskyTest1.GetNumOfFollowers(); f != 2 {
-		t.Errorf("Expected 2, but it was %d instead.", f)
-	}
 }
 
 func TestBloomskyStructure_IsNight(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   bool
 	}{
 		{"Day", mybloomskyTest1, false},
@@ -56,8 +47,7 @@ func TestBloomskyStructure_IsNight(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bloomskyInfo := tt.fields
-			if got := bloomskyInfo.IsNight(); got != tt.want {
+			if got := tt.fields.IsNight(); got != tt.want {
 				t.Errorf("BloomskyStructure.IsNight() = %v, want %v", got, tt.want)
 			}
 		})
@@ -67,7 +57,7 @@ func TestBloomskyStructure_IsNight(t *testing.T) {
 func TestBloomskyStructure_GetTimeStamp(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   time.Time
 	}{
 		{"Test1", mybloomskyTest1, time.Unix(int64(1496365207), 0)},
@@ -75,8 +65,7 @@ func TestBloomskyStructure_GetTimeStamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bloomskyInfo := tt.fields
-			if got := bloomskyInfo.GetTimeStamp(); got != tt.want {
+			if got := tt.fields.GetTimeStamp(); got != tt.want {
 				t.Errorf("BloomskyStructure.GetTimeStamp() = %v, want %v", got, tt.want)
 			}
 		})
@@ -86,7 +75,7 @@ func TestBloomskyStructure_GetTimeStamp(t *testing.T) {
 func TestBloomskyStructure_GetCity(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   string
 	}{
 		{"Test1", mybloomskyTest1, "Thuin"},
@@ -94,8 +83,7 @@ func TestBloomskyStructure_GetCity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bloomskyInfo := tt.fields
-			if got := bloomskyInfo.GetCity(); got != tt.want {
+			if got := tt.fields.GetCity(); got != tt.want {
 				t.Errorf("BloomskyStructure.GetCity() = %v, want %v", got, tt.want)
 			}
 		})
@@ -105,7 +93,7 @@ func TestBloomskyStructure_GetCity(t *testing.T) {
 func TestBloomskyStructure_GetDeviceId(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   string
 	}{
 		{"Test1", mybloomskyTest1, "442C05954A59"},
@@ -113,8 +101,7 @@ func TestBloomskyStructure_GetDeviceId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bloomskyInfo := tt.fields
-			if got := bloomskyInfo.GetDeviceID(); got != tt.want {
+			if got := tt.fields.GetDeviceID(); got != tt.want {
 				t.Errorf("BloomskyStructure.GetDeviceID() = %v, want %v", got, tt.want)
 			}
 		})
@@ -124,7 +111,7 @@ func TestBloomskyStructure_GetDeviceId(t *testing.T) {
 func TestBloomskyStructure_GetNumOfFollowers(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   int
 	}{
 		{"Test1", mybloomskyTest1, 2},
@@ -161,6 +148,7 @@ func TestNewBloomsky(t *testing.T) {
 	}
 }*/
 
+/*
 func TestNewBloomskyFromBody(t *testing.T) {
 	type args struct {
 		body []byte
@@ -168,7 +156,7 @@ func TestNewBloomskyFromBody(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want BloomskyStructure
+		want Bloomsky
 	}{
 	// TODO: Add test cases.
 	}
@@ -180,17 +168,12 @@ func TestNewBloomskyFromBody(t *testing.T) {
 		})
 	}
 }
-
-func TestUV(t *testing.T) {
-	if uv := mybloomskyTest1.GetIndexUV(); uv != "1" {
-		t.Errorf("Expected 1, but it was %s instead.", uv)
-	}
-}
+*/
 
 func TestBloomskyStructure_GetIndexUV(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   string
 	}{
 		{"Test1", mybloomskyTest1, "1"},
@@ -209,7 +192,7 @@ func TestBloomskyStructure_GetIndexUV(t *testing.T) {
 func TestBloomskyStructure_GetTemperatureFahrenheit(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 70.79},
@@ -227,7 +210,7 @@ func TestBloomskyStructure_GetTemperatureFahrenheit(t *testing.T) {
 func TestBloomskyStructure_GetTemperatureCelsius(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 21.55},
@@ -245,7 +228,7 @@ func TestBloomskyStructure_GetTemperatureCelsius(t *testing.T) {
 func TestBloomskyStructure_GetHumidity(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 64},
@@ -263,7 +246,7 @@ func TestBloomskyStructure_GetHumidity(t *testing.T) {
 func TestBloomskyStructure_GetPressureInHg(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 29.41},
@@ -281,7 +264,7 @@ func TestBloomskyStructure_GetPressureInHg(t *testing.T) {
 func TestBloomskyStructure_GetPressureHPa(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 995.94},
@@ -299,7 +282,7 @@ func TestBloomskyStructure_GetPressureHPa(t *testing.T) {
 func TestBloomskyStructure_GetWindDirection(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   string
 	}{
 		{"Test1", mybloomskyTest1, "E"},
@@ -317,7 +300,7 @@ func TestBloomskyStructure_GetWindDirection(t *testing.T) {
 func TestBloomskyStructure_GetWindGustMph(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -335,7 +318,7 @@ func TestBloomskyStructure_GetWindGustMph(t *testing.T) {
 func TestBloomskyStructure_GetWindGustMs(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -353,7 +336,7 @@ func TestBloomskyStructure_GetWindGustMs(t *testing.T) {
 func TestBloomskyStructure_GetSustainedWindSpeedMph(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -371,7 +354,7 @@ func TestBloomskyStructure_GetSustainedWindSpeedMph(t *testing.T) {
 func TestBloomskyStructure_GetSustainedWindSpeedMs(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -389,7 +372,7 @@ func TestBloomskyStructure_GetSustainedWindSpeedMs(t *testing.T) {
 func TestBloomskyStructure_IsRain(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   bool
 	}{
 		{"Test1", mybloomskyTest1, true},
@@ -407,7 +390,7 @@ func TestBloomskyStructure_IsRain(t *testing.T) {
 func TestBloomskyStructure_GetRainDailyIn(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -425,7 +408,7 @@ func TestBloomskyStructure_GetRainDailyIn(t *testing.T) {
 func TestBloomskyStructure_GetRainIn(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -443,7 +426,7 @@ func TestBloomskyStructure_GetRainIn(t *testing.T) {
 func TestBloomskyStructure_GetRainRateIn(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -461,7 +444,7 @@ func TestBloomskyStructure_GetRainRateIn(t *testing.T) {
 func TestBloomskyStructure_GetRainDailyMm(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -479,7 +462,7 @@ func TestBloomskyStructure_GetRainDailyMm(t *testing.T) {
 func TestBloomskyStructure_GetRainMm(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -497,7 +480,7 @@ func TestBloomskyStructure_GetRainMm(t *testing.T) {
 func TestBloomskyStructure_GetRainRateMm(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -515,7 +498,7 @@ func TestBloomskyStructure_GetRainRateMm(t *testing.T) {
 func TestBloomskyStructure_GetSustainedWindSpeedkmh(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
@@ -533,7 +516,7 @@ func TestBloomskyStructure_GetSustainedWindSpeedkmh(t *testing.T) {
 func TestBloomskyStructure_GetWindGustkmh(t *testing.T) {
 	tests := []struct {
 		name   string
-		fields BloomskyStructure
+		fields Bloomsky
 		want   float64
 	}{
 		{"Test1", mybloomskyTest1, 0},
