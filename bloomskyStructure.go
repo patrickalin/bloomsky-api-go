@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	http "github.com/patrickalin/http"
+	http "github.com/patrickalin/http-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -114,7 +114,7 @@ const logFile = "bloomskyapi.log"
 
 var log *logrus.Logger
 
-var rest http.RestHTTP
+var rest http.HTTP
 
 // New calls bloomsky and get structurebloomsky
 func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
@@ -124,7 +124,7 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 		"url": bloomskyURL,
 	}).Debug("New bloomsky")
 
-	rest = http.NewWithLogger(log)
+	rest = http.New(log)
 
 	return &bloomsky{}
 }
