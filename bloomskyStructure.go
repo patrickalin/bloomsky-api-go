@@ -12,13 +12,13 @@ import (
 )
 
 type bloomsky struct {
-	url            string
-	token          string
-	bloomskystruct bloomskyStructure
+	url               string
+	token             string
+	BloomskyStructure BloomskyStructure
 }
 
 // BloomskyStructure represents the structure of the JSON return by the API
-type bloomskyStructure struct {
+type BloomskyStructure struct {
 	UTC              float64                `json:"UTC"`
 	CityName         string                 `json:"CityName"`
 	Storm            BloomskyStormStructure `json:"Storm"`
@@ -79,7 +79,7 @@ type BloomskyDataStructure struct {
 	ImageTS      float64 `json:"ImageTS"`
 }
 
-// Bloomsky is the interface bloomskyStructure
+// Bloomsky is the interface BloomskyStructure
 type Bloomsky interface {
 	GetDeviceID() string
 	GetHumidity() float64
@@ -108,6 +108,9 @@ type Bloomsky interface {
 	GetWindGustkmh() float64
 	GetSustainedWindSpeedkmh() float64
 	GetRainMm() float64
+	GetBloomskyStruct() BloomskyStructure
+	GetLastCall() string
+	GetTS() float64
 }
 
 const logFile = "bloomskyapi.log"
@@ -122,6 +125,7 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 
 	log.WithFields(logrus.Fields{
 		"url": bloomskyURL,
+		"fct": "bloomskyStructure.New",
 	}).Debug("New bloomsky")
 
 	rest = http.New(log)
@@ -170,153 +174,171 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 }
 
 func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
-	var bloomskyArray []bloomskyStructure
+	var bloomskyArray []BloomskyStructure
 	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
 		log.WithFields(logrus.Fields{
 			"body": body,
 			"msg":  err,
 		}).Fatal("Problem with json to struct")
 	}
-	bloomsky.bloomskystruct = bloomskyArray[0]
-	bloomsky.bloomskystruct.Data.TemperatureC = toFixed(((bloomsky.bloomskystruct.Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
-	bloomsky.bloomskystruct.Data.Pressurehpa = toFixed((bloomsky.bloomskystruct.Data.Pressure * 33.8638815), 2)
+	bloomsky.BloomskyStructure = bloomskyArray[0]
+	bloomsky.BloomskyStructure.Data.TemperatureC = toFixed(((bloomsky.BloomskyStructure.Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
+	bloomsky.BloomskyStructure.Data.Pressurehpa = toFixed((bloomsky.BloomskyStructure.Data.Pressure * 33.8638815), 2)
 
-	bloomsky.bloomskystruct.Storm.WindGustms = toFixed(bloomsky.bloomskystruct.Storm.WindGust*0.44704, 2)
-	bloomsky.bloomskystruct.Storm.WindGustkmh = toFixed(bloomsky.bloomskystruct.Storm.WindGust*1.60934, 2)
-	bloomsky.bloomskystruct.Storm.SustainedWindSpeedms = toFixed(bloomsky.bloomskystruct.Storm.SustainedWindSpeed*0.44704, 2)
-	bloomsky.bloomskystruct.Storm.SustainedWindSpeedkmh = toFixed(bloomsky.bloomskystruct.Storm.SustainedWindSpeed*1.60934, 2)
+	bloomsky.BloomskyStructure.Storm.WindGustms = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*0.44704, 2)
+	bloomsky.BloomskyStructure.Storm.WindGustkmh = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*1.60934, 2)
+	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedms = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*0.44704, 2)
+	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedkmh = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*1.60934, 2)
 
-	bloomsky.bloomskystruct.Storm.RainDailymm = toFixed(bloomsky.bloomskystruct.Storm.RainDaily*25.4, 2)
-	bloomsky.bloomskystruct.Storm.RainRatemm = toFixed(bloomsky.bloomskystruct.Storm.RainRate*25.4, 2)
-	bloomsky.bloomskystruct.Storm.Rainmm = toFixed(bloomsky.bloomskystruct.Storm.Rainin*25.4, 2)
+	bloomsky.BloomskyStructure.Storm.RainDailymm = toFixed(bloomsky.BloomskyStructure.Storm.RainDaily*25.4, 2)
+	bloomsky.BloomskyStructure.Storm.RainRatemm = toFixed(bloomsky.BloomskyStructure.Storm.RainRate*25.4, 2)
+	bloomsky.BloomskyStructure.Storm.Rainmm = toFixed(bloomsky.BloomskyStructure.Storm.Rainin*25.4, 2)
+	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
+
+	log.WithFields(logrus.Fields{
+		"time": bloomsky.BloomskyStructure.LastCall,
+		"fct":  "bloomskyStructure.RefreshFromBody",
+	}).Debug("Refresh From Body")
 
 	bloomsky.ShowPrettyAll()
-	bloomsky.bloomskystruct.LastCall = time.Now().Format("2006-01-02 15:04:05")
+
+}
+
+func (bloomsky *bloomsky) GetBloomskyStruct() BloomskyStructure {
+	return bloomsky.BloomskyStructure
 }
 
 //GetTimeStamp returns the timestamp give by Bloomsky
 func (bloomsky *bloomsky) GetTimeStamp() time.Time {
-	return time.Unix(int64(bloomsky.bloomskystruct.Data.TS), 0)
+	return time.Unix(int64(bloomsky.BloomskyStructure.Data.TS), 0)
 }
 
 //GetCity returns the city name
 func (bloomsky *bloomsky) GetCity() string {
-	return bloomsky.bloomskystruct.CityName
+	return bloomsky.BloomskyStructure.CityName
 }
 
 //GetDeviceID returns the Device Id
 func (bloomsky *bloomsky) GetDeviceID() string {
-	return bloomsky.bloomskystruct.DeviceID
+	return bloomsky.BloomskyStructure.DeviceID
 }
 
 //GetNumOfFollowers returns the number of followers
 func (bloomsky *bloomsky) GetNumOfFollowers() int {
-	return int(bloomsky.bloomskystruct.NumOfFollowers)
+	return int(bloomsky.BloomskyStructure.NumOfFollowers)
 }
 
 //GetIndexUV returns the UV index from 1 to 11
 func (bloomsky *bloomsky) GetIndexUV() string {
-	return bloomsky.bloomskystruct.Storm.UVIndex
+	return bloomsky.BloomskyStructure.Storm.UVIndex
 }
 
 //IsNight returns true if it's the night
 func (bloomsky *bloomsky) IsNight() bool {
-	return bloomsky.bloomskystruct.Data.Night
+	return bloomsky.BloomskyStructure.Data.Night
 }
 
 //GetTemperatureFahrenheit returns temperature in Fahrenheit
 func (bloomsky *bloomsky) GetTemperatureFahrenheit() float64 {
-	return bloomsky.bloomskystruct.Data.TemperatureF
+	return bloomsky.BloomskyStructure.Data.TemperatureF
 }
 
 //GetTemperatureCelsius returns temperature in Celsius
 func (bloomsky *bloomsky) GetTemperatureCelsius() float64 {
-	return bloomsky.bloomskystruct.Data.TemperatureC
+	return bloomsky.BloomskyStructure.Data.TemperatureC
 }
 
 //GetHumidity returns humidity %
 func (bloomsky *bloomsky) GetHumidity() float64 {
-	return bloomsky.bloomskystruct.Data.Humidity
+	return bloomsky.BloomskyStructure.Data.Humidity
 }
 
 //GetPressureHPa returns pressure in HPa
 func (bloomsky *bloomsky) GetPressureHPa() float64 {
-	return bloomsky.bloomskystruct.Data.Pressurehpa
+	return bloomsky.BloomskyStructure.Data.Pressurehpa
 }
 
 //GetPressureInHg returns pressure in InHg
 func (bloomsky *bloomsky) GetPressureInHg() float64 {
-	return bloomsky.bloomskystruct.Data.Pressure
+	return bloomsky.BloomskyStructure.Data.Pressure
 }
 
 //GetWindDirection returns wind direction (N,S,W,E, ...)
 func (bloomsky *bloomsky) GetWindDirection() string {
-	return bloomsky.bloomskystruct.Storm.WindDirection
+	return bloomsky.BloomskyStructure.Storm.WindDirection
 }
 
 //GetWindGustMph returns Wind in Mph
 func (bloomsky *bloomsky) GetWindGustMph() float64 {
-	return bloomsky.bloomskystruct.Storm.WindGust
+	return bloomsky.BloomskyStructure.Storm.WindGust
 }
 
 //GetWindGustMs returns Wind in Ms
 func (bloomsky *bloomsky) GetWindGustMs() float64 {
-	return (bloomsky.bloomskystruct.Storm.WindGust * 1.61)
+	return (bloomsky.BloomskyStructure.Storm.WindGust * 1.61)
 }
 
 //GetSustainedWindSpeedMph returns Sustained Wind Speed in Mph
 func (bloomsky *bloomsky) GetSustainedWindSpeedMph() float64 {
-	return bloomsky.bloomskystruct.Storm.SustainedWindSpeed
+	return bloomsky.BloomskyStructure.Storm.SustainedWindSpeed
 }
 
 //GetSustainedWindSpeedMs returns Sustained Wind Speed in Ms
 func (bloomsky *bloomsky) GetSustainedWindSpeedMs() float64 {
-	return (bloomsky.bloomskystruct.Storm.SustainedWindSpeed * 1.61)
+	return (bloomsky.BloomskyStructure.Storm.SustainedWindSpeed * 1.61)
 }
 
 //IsRain returns true if it's rain
 func (bloomsky *bloomsky) IsRain() bool {
-	return bloomsky.bloomskystruct.Data.Rain
+	return bloomsky.BloomskyStructure.Data.Rain
 }
 
 //GetRainDailyIn returns rain daily in In
 func (bloomsky *bloomsky) GetRainDailyIn() float64 {
-	return bloomsky.bloomskystruct.Storm.RainDaily
+	return bloomsky.BloomskyStructure.Storm.RainDaily
 }
 
 //GetRainIn returns total rain in In
 func (bloomsky *bloomsky) GetRainIn() float64 {
-	return bloomsky.bloomskystruct.Storm.Rainin
+	return bloomsky.BloomskyStructure.Storm.Rainin
 }
 
 //GetRainRateIn returns rain in In
 func (bloomsky *bloomsky) GetRainRateIn() float64 {
-	return bloomsky.bloomskystruct.Storm.RainRate
+	return bloomsky.BloomskyStructure.Storm.RainRate
 }
 
 //GetRainDailyMm returns rain daily in mm
 func (bloomsky *bloomsky) GetRainDailyMm() float64 {
-	return bloomsky.bloomskystruct.Storm.RainDaily
+	return bloomsky.BloomskyStructure.Storm.RainDaily
 }
 
 //GetRainMm returns total rain in mm
 func (bloomsky *bloomsky) GetRainMm() float64 {
-	return bloomsky.bloomskystruct.Storm.Rainmm
+	return bloomsky.BloomskyStructure.Storm.Rainmm
 }
 
 //GetRainRateMm returns rain in mm
 func (bloomsky *bloomsky) GetRainRateMm() float64 {
-	return bloomsky.bloomskystruct.Storm.RainRate
+	return bloomsky.BloomskyStructure.Storm.RainRate
 }
 
 //GetSustainedWindSpeedkmh returns Sustained Wind in Km/h
 func (bloomsky *bloomsky) GetSustainedWindSpeedkmh() float64 {
-	return bloomsky.bloomskystruct.Storm.SustainedWindSpeedkmh
+	return bloomsky.BloomskyStructure.Storm.SustainedWindSpeedkmh
 }
 
 //GetWindGustkmh returns Wind in Km/h
 func (bloomsky *bloomsky) GetWindGustkmh() float64 {
-	return bloomsky.bloomskystruct.Storm.WindGustkmh
+	return bloomsky.BloomskyStructure.Storm.WindGustkmh
+}
+
+func (bloomsky *bloomsky) GetLastCall() string {
+	return bloomsky.BloomskyStructure.LastCall
+}
+
+func (bloomsky *bloomsky) GetTS() float64 {
+	return bloomsky.BloomskyStructure.Data.TS
 }
 
 func round(num float64) int {
@@ -332,7 +354,14 @@ func toFixed(num float64, precision int) float64 {
 func (bloomsky *bloomsky) ShowPrettyAll() {
 	out, err := json.Marshal(bloomsky)
 	if err != nil {
-		log.Fatalf("Error with parsing Json")
+		log.WithFields(logrus.Fields{
+			"bloomsky": out,
+			"fct":      "bloomskyStructure.ShowPrettyAll",
+		}).Fatal("Error with parsing Json")
 	}
-	log.Debugf("Decode:> \n", out)
+
+	/*log.WithFields(logrus.Fields{
+		"bloomsky": out,
+		"fct":      "bloomskyStructure.ShowPrettyAll",
+	}).Debug("Decode bloomsky")*/
 }
