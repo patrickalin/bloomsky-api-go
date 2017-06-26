@@ -123,32 +123,50 @@ var rest http.HTTP
 func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 	initLog(l)
 
+	var b bloomsky
+
 	log.WithFields(logrus.Fields{
 		"url": bloomskyURL,
 		"fct": "bloomskyStructure.New",
 	}).Debug("New bloomsky")
 
+	b.token = bloomskyToken
+	b.url = bloomskyURL
+
 	rest = http.New(log)
 
-	return &bloomsky{}
+	return &b
 }
 
+//Init the logger
 func initLog(l *logrus.Logger) {
 	if l != nil {
 		log = l
+		log.WithFields(logrus.Fields{
+			"fct": "bloomskyStructure.initLog",
+		}).Debug("Use the logger pass in New")
 		return
 	}
 
 	log = logrus.New()
+
+	log.WithFields(logrus.Fields{
+		"fct": "bloomskyStructure.initLog",
+	}).Debug("Create new logger")
+
 	log.Formatter = new(logrus.TextFormatter)
 
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		logrus.Info("Failed to log to file, using default stderr")
+		logrus.WithFields(logrus.Fields{
+			"msg": err,
+			"fct": "bloomskyStructure.initLog",
+		}).Fatal("Failed to log to file, using default stderr")
 	}
 	log.Out = file
 }
 
+//Call rest and refresh the structure
 func (bloomsky *bloomsky) RefreshFromRest() {
 	tock := []string{bloomsky.token}
 
@@ -173,6 +191,7 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 	bloomsky.RefreshFromBody(rest.GetBody())
 }
 
+//Refresh from body without call rest
 func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	var bloomskyArray []BloomskyStructure
 	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
@@ -359,9 +378,4 @@ func (bloomsky *bloomsky) ShowPrettyAll() {
 			"fct":      "bloomskyStructure.ShowPrettyAll",
 		}).Fatal("Error with parsing Json")
 	}
-
-	/*log.WithFields(logrus.Fields{
-		"bloomsky": out,
-		"fct":      "bloomskyStructure.ShowPrettyAll",
-	}).Debug("Decode bloomsky")*/
 }
