@@ -115,6 +115,7 @@ type Bloomsky interface {
 	IsRain() bool
 	IsNight() bool
 	Refresh()
+	RefreshFromBody(body []byte)
 }
 
 const logFile = "bloomskyapi.log"
@@ -152,7 +153,7 @@ func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsk
 
 func (bloomsky *bloomsky) Refresh() {
 	if bloomsky.mock {
-		bloomsky.refreshFromBody(mockFileByte)
+		bloomsky.RefreshFromBody(mockFileByte)
 		return
 	}
 	bloomsky.refreshFromRest()
@@ -358,11 +359,11 @@ func (bloomsky *bloomsky) refreshFromRest() {
 		}
 	}
 
-	bloomsky.refreshFromBody(rest.GetBody())
+	bloomsky.RefreshFromBody(rest.GetBody())
 }
 
 //Refresh from body without call rest
-func (bloomsky *bloomsky) refreshFromBody(body []byte) {
+func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	var bloomskyArray []BloomskyStructure
 	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
 		logFatal(err, funcName(), "Problem with json to struct", string(body))
