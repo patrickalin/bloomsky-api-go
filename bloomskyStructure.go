@@ -125,7 +125,7 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 
 	var b bloomsky
 
-	logInfo(funcName(), "New bloomsky structure", bloomskyURL)
+	logDebug(funcName(), "New bloomsky structure", bloomskyURL)
 
 	b.token = bloomskyToken
 	b.url = bloomskyURL

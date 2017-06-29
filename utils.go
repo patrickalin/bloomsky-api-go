@@ -33,13 +33,6 @@ func logWarn(fct string, msg string, param string) {
 	}).Warn(msg)
 }
 
-func logInfo(fct string, msg string, param string) {
-	logrus.WithFields(logrus.Fields{
-		"param": param,
-		"fct":   fct,
-	}).Info(msg)
-}
-
 func checkErr(err error, fct string, msg string, param string) {
 	if err != nil {
 		logFatal(err, msg, fct, param)
