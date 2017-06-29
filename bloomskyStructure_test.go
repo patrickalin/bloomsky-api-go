@@ -1,38 +1,22 @@
 package bloomskyStructure
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 var mybloomskyTest1 Bloomsky
 var mybloomskyTest2 Bloomsky
 
-const testFile1 = "testCase/test1.json"
-const testFile2 = "testCase/test2.json"
-
-func readTestFile(fMock string) []byte {
-	testFile, err := ioutil.ReadFile(fMock)
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"file": fMock,
-			"msg":  err,
-		}).Fatal("Error reading the file")
-
-	}
-	return testFile
-}
+const testFile1 = "testcase/test1.json"
+const testFile2 = "testcase/test2.json"
 
 func TestMain(m *testing.M) {
-
-	mybloomskyTest1 = New("", "", nil)
-	mybloomskyTest1.RefreshFromBody(readTestFile(testFile1))
-	mybloomskyTest2 = New("", "", nil)
-	mybloomskyTest2.RefreshFromBody(readTestFile(testFile2))
+	mybloomskyTest1 = New("", "", true, nil)
+	mybloomskyTest1.RefreshFromBody(readFile(testFile1))
+	mybloomskyTest2 = New("", "", true, nil)
+	mybloomskyTest2.RefreshFromBody(readFile(testFile2))
 	os.Exit(m.Run())
 }
 

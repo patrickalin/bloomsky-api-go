@@ -1,12 +1,16 @@
 // Package bloomskyStructure calls rest API Bloomsky, puts it in the structure and gives somes functions
 package bloomskyStructure
 
+//go:generate echo Go Generate!
+//go:generate ./command/bindata.sh
+
 import (
 	"encoding/json"
 	"math"
 	"os"
 	"time"
 
+	"github.com/patrickalin/bloomsky-api-go/assembly"
 	http "github.com/patrickalin/http-go"
 	"github.com/sirupsen/logrus"
 )
@@ -15,6 +19,7 @@ type bloomsky struct {
 	url               string
 	token             string
 	BloomskyStructure BloomskyStructure
+	mock              bool
 }
 
 // BloomskyStructure represents the structure of the JSON return by the API
@@ -111,16 +116,20 @@ type Bloomsky interface {
 	GetBloomskyStruct() BloomskyStructure
 	GetLastCall() string
 	GetTS() float64
+	Refresh()
 }
 
 const logFile = "bloomskyapi.log"
+const mockFile = "mock/mock.json"
 
-var log *logrus.Logger
-
-var rest http.HTTP
+var (
+	log          *logrus.Logger
+	rest         http.HTTP
+	mockFileByte []byte
+)
 
 // New calls bloomsky and get structurebloomsky
-func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
+func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsky {
 	initLog(l)
 
 	var b bloomsky
@@ -130,9 +139,25 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 	b.token = bloomskyToken
 	b.url = bloomskyURL
 
+	b.mock = mock
+
+	// Read mock file
+	if mock {
+		logWarn(funcName(), "Mock activated !!!", "")
+		mockFileByte = readFile(mockFile)
+	}
+
 	rest = http.New(log)
 
 	return &b
+}
+
+func (bloomsky *bloomsky) Refresh() {
+	if bloomsky.mock {
+		bloomsky.RefreshFromBody(mockFileByte)
+		return
+	}
+	bloomsky.RefreshFromRest()
 }
 
 //Call rest and refresh the structure
@@ -355,4 +380,11 @@ func toFixed(num float64, precision int) float64 {
 func (bloomsky *bloomsky) showPrettyAll() {
 	out, err := json.Marshal(bloomsky)
 	checkErr(err, funcName(), "Error with parsing Json", string(out))
+}
+
+//Read file and return []byte
+func readFile(fileName string) []byte {
+	fileByte, err := assembly.Asset(fileName)
+	checkErr(err, funcName(), "Error reading the file", fileName)
+	return fileByte
 }
