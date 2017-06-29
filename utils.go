@@ -32,6 +32,9 @@ func logDebug(fct string, msg string, param string) {
 }
 
 func logWarn(fct string, msg string, param string) {
+	logrus.WithFields(logrus.Fields{
+		"param": param,
+	}).Warn(msg)
 	log.WithFields(logrus.Fields{
 		"param": param,
 		"fct":   fct,
