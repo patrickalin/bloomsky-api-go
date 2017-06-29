@@ -530,3 +530,21 @@ func TestBloomskyStructure_GetWindGustkmh(t *testing.T) {
 		})
 	}
 }
+
+func Test_bloomsky_GetTS(t *testing.T) {
+	tests := []struct {
+		name   string
+		fields Bloomsky
+		want   float64
+	}{
+		{"Test1", mybloomskyTest1, 1496365207},
+		{"Test2", mybloomskyTest2, 1496345207},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.fields.GetTS(); got != tt.want {
+				t.Errorf("BloomskyStructure.GetTS() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
