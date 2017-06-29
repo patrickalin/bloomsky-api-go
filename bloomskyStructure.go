@@ -125,10 +125,7 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 
 	var b bloomsky
 
-	log.WithFields(logrus.Fields{
-		"param1": bloomskyURL,
-		"fct":    "bloomskyStructure.New",
-	}).Info("New bloomsky structure")
+	logInfo(funcName(), "New bloomsky structure", bloomskyURL)
 
 	b.token = bloomskyToken
 	b.url = bloomskyURL
@@ -149,10 +146,7 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 	var retry = 0
 	for retry < 5 {
 		if err := rest.GetWithHeaders(bloomsky.url, headers); err != nil {
-			log.WithFields(logrus.Fields{
-				"param1": bloomsky.url,
-				"Error":  err,
-			}).Error("Problem with call rest, check the URL and the secret ID in the config file")
+			logFatal(err, funcName(), "Problem with call rest, check the URL and the secret ID in the config file", bloomsky.url)
 			retry++
 			time.Sleep(time.Minute * 5)
 		} else {
@@ -167,10 +161,7 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	var bloomskyArray []BloomskyStructure
 	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
-		log.WithFields(logrus.Fields{
-			"body": body,
-			"msg":  err,
-		}).Fatal("Problem with json to struct")
+		logFatal(err, funcName(), "Problem with json to struct", string(body))
 	}
 	bloomsky.BloomskyStructure = bloomskyArray[0]
 	bloomsky.BloomskyStructure.Data.TemperatureC = toFixed(((bloomsky.BloomskyStructure.Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
@@ -186,10 +177,7 @@ func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	bloomsky.BloomskyStructure.Storm.Rainmm = toFixed(bloomsky.BloomskyStructure.Storm.Rainin*25.4, 2)
 	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
 
-	log.WithFields(logrus.Fields{
-		"param1": bloomsky.BloomskyStructure.LastCall,
-		"fct":    "bloomskyStructure.RefreshFromBody",
-	}).Debug("Refresh From Body")
+	logDebug(funcName(), "Refresh From Body", bloomsky.BloomskyStructure.LastCall)
 
 	bloomsky.showPrettyAll()
 
@@ -338,27 +326,19 @@ func (bloomsky *bloomsky) GetTS() float64 {
 func initLog(l *logrus.Logger) {
 	if l != nil {
 		log = l
-		log.WithFields(logrus.Fields{
-			"fct": "bloomskyStructure.initLog",
-		}).Debug("Use the logger pass in New")
+		logDebug(funcName(), "Use the logger pass in New", "")
 		return
 	}
 
 	log = logrus.New()
 
-	log.WithFields(logrus.Fields{
-		"fct": "bloomskyStructure.initLog",
-	}).Debug("Create new logger")
+	logDebug(funcName(), "Create new logger", "")
 
 	log.Formatter = new(logrus.TextFormatter)
 
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"msg": err,
-			"fct": "bloomskyStructure.initLog",
-		}).Fatal("Failed to log to file, using default stderr")
-	}
+	checkErr(err, funcName(), "Failed to log to file, using default stderr", "")
+
 	log.Out = file
 }
 
@@ -374,10 +354,5 @@ func toFixed(num float64, precision int) float64 {
 // ShowPrettyAll prints to the console the JSON
 func (bloomsky *bloomsky) showPrettyAll() {
 	out, err := json.Marshal(bloomsky)
-	if err != nil {
-		log.WithFields(logrus.Fields{
-			"bloomsky": out,
-			"fct":      "bloomskyStructure.ShowPrettyAll",
-		}).Fatal("Error with parsing Json")
-	}
+	checkErr(err, funcName(), "Error with parsing Json", string(out))
 }
