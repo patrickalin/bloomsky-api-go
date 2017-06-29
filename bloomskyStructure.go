@@ -89,10 +89,7 @@ type Bloomsky interface {
 	GetDeviceID() string
 	GetHumidity() float64
 	GetCity() string
-	RefreshFromRest()
-	RefreshFromBody(body []byte)
 	GetNumOfFollowers() int
-	IsNight() bool
 	GetPressureHPa() float64
 	GetWindDirection() string
 	GetTimeStamp() time.Time
@@ -104,7 +101,6 @@ type Bloomsky interface {
 	GetWindGustMs() float64
 	GetSustainedWindSpeedMs() float64
 	GetSustainedWindSpeedMph() float64
-	IsRain() bool
 	GetRainDailyIn() float64
 	GetRainRateIn() float64
 	GetRainIn() float64
@@ -116,6 +112,8 @@ type Bloomsky interface {
 	GetBloomskyStruct() BloomskyStructure
 	GetLastCall() string
 	GetTS() float64
+	IsRain() bool
+	IsNight() bool
 	Refresh()
 }
 
@@ -154,14 +152,14 @@ func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsk
 
 func (bloomsky *bloomsky) Refresh() {
 	if bloomsky.mock {
-		bloomsky.RefreshFromBody(mockFileByte)
+		bloomsky.refreshFromBody(mockFileByte)
 		return
 	}
-	bloomsky.RefreshFromRest()
+	bloomsky.refreshFromRest()
 }
 
 //Call rest and refresh the structure
-func (bloomsky *bloomsky) RefreshFromRest() {
+func (bloomsky *bloomsky) refreshFromRest() {
 	tock := []string{bloomsky.token}
 
 	var headers map[string][]string
@@ -179,11 +177,11 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 		}
 	}
 
-	bloomsky.RefreshFromBody(rest.GetBody())
+	bloomsky.refreshFromBody(rest.GetBody())
 }
 
 //Refresh from body without call rest
-func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
+func (bloomsky *bloomsky) refreshFromBody(body []byte) {
 	var bloomskyArray []BloomskyStructure
 	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
 		logFatal(err, funcName(), "Problem with json to struct", string(body))
