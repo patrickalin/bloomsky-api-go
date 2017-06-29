@@ -126,9 +126,9 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 	var b bloomsky
 
 	log.WithFields(logrus.Fields{
-		"url": bloomskyURL,
-		"fct": "bloomskyStructure.New",
-	}).Debug("New bloomsky")
+		"param1": bloomskyURL,
+		"fct":    "bloomskyStructure.New",
+	}).Info("New bloomsky structure")
 
 	b.token = bloomskyToken
 	b.url = bloomskyURL
@@ -136,34 +136,6 @@ func New(bloomskyURL, bloomskyToken string, l *logrus.Logger) Bloomsky {
 	rest = http.New(log)
 
 	return &b
-}
-
-//Init the logger
-func initLog(l *logrus.Logger) {
-	if l != nil {
-		log = l
-		log.WithFields(logrus.Fields{
-			"fct": "bloomskyStructure.initLog",
-		}).Debug("Use the logger pass in New")
-		return
-	}
-
-	log = logrus.New()
-
-	log.WithFields(logrus.Fields{
-		"fct": "bloomskyStructure.initLog",
-	}).Debug("Create new logger")
-
-	log.Formatter = new(logrus.TextFormatter)
-
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"msg": err,
-			"fct": "bloomskyStructure.initLog",
-		}).Fatal("Failed to log to file, using default stderr")
-	}
-	log.Out = file
 }
 
 //Call rest and refresh the structure
@@ -178,8 +150,8 @@ func (bloomsky *bloomsky) RefreshFromRest() {
 	for retry < 5 {
 		if err := rest.GetWithHeaders(bloomsky.url, headers); err != nil {
 			log.WithFields(logrus.Fields{
-				"url":   bloomsky.url,
-				"Error": err,
+				"param1": bloomsky.url,
+				"Error":  err,
 			}).Error("Problem with call rest, check the URL and the secret ID in the config file")
 			retry++
 			time.Sleep(time.Minute * 5)
@@ -215,11 +187,11 @@ func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
 
 	log.WithFields(logrus.Fields{
-		"time": bloomsky.BloomskyStructure.LastCall,
-		"fct":  "bloomskyStructure.RefreshFromBody",
+		"param1": bloomsky.BloomskyStructure.LastCall,
+		"fct":    "bloomskyStructure.RefreshFromBody",
 	}).Debug("Refresh From Body")
 
-	bloomsky.ShowPrettyAll()
+	bloomsky.showPrettyAll()
 
 }
 
@@ -360,6 +332,36 @@ func (bloomsky *bloomsky) GetTS() float64 {
 	return bloomsky.BloomskyStructure.Data.TS
 }
 
+/* Func private ------------------------------------ */
+
+//Init the logger
+func initLog(l *logrus.Logger) {
+	if l != nil {
+		log = l
+		log.WithFields(logrus.Fields{
+			"fct": "bloomskyStructure.initLog",
+		}).Debug("Use the logger pass in New")
+		return
+	}
+
+	log = logrus.New()
+
+	log.WithFields(logrus.Fields{
+		"fct": "bloomskyStructure.initLog",
+	}).Debug("Create new logger")
+
+	log.Formatter = new(logrus.TextFormatter)
+
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"msg": err,
+			"fct": "bloomskyStructure.initLog",
+		}).Fatal("Failed to log to file, using default stderr")
+	}
+	log.Out = file
+}
+
 func round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
 }
@@ -370,7 +372,7 @@ func toFixed(num float64, precision int) float64 {
 }
 
 // ShowPrettyAll prints to the console the JSON
-func (bloomsky *bloomsky) ShowPrettyAll() {
+func (bloomsky *bloomsky) showPrettyAll() {
 	out, err := json.Marshal(bloomsky)
 	if err != nil {
 		log.WithFields(logrus.Fields{
