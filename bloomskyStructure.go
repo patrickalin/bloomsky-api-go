@@ -158,54 +158,6 @@ func (bloomsky *bloomsky) Refresh() {
 	bloomsky.refreshFromRest()
 }
 
-//Call rest and refresh the structure
-func (bloomsky *bloomsky) refreshFromRest() {
-	tock := []string{bloomsky.token}
-
-	var headers map[string][]string
-	headers = make(map[string][]string)
-	headers["Authorization"] = tock
-
-	var retry = 0
-	for retry < 5 {
-		if err := rest.GetWithHeaders(bloomsky.url, headers); err != nil {
-			logFatal(err, funcName(), "Problem with call rest, check the URL and the secret ID in the config file", bloomsky.url)
-			retry++
-			time.Sleep(time.Minute * 5)
-		} else {
-			retry = 5
-		}
-	}
-
-	bloomsky.refreshFromBody(rest.GetBody())
-}
-
-//Refresh from body without call rest
-func (bloomsky *bloomsky) refreshFromBody(body []byte) {
-	var bloomskyArray []BloomskyStructure
-	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
-		logFatal(err, funcName(), "Problem with json to struct", string(body))
-	}
-	bloomsky.BloomskyStructure = bloomskyArray[0]
-	bloomsky.BloomskyStructure.Data.TemperatureC = toFixed(((bloomsky.BloomskyStructure.Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
-	bloomsky.BloomskyStructure.Data.Pressurehpa = toFixed((bloomsky.BloomskyStructure.Data.Pressure * 33.8638815), 2)
-
-	bloomsky.BloomskyStructure.Storm.WindGustms = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*0.44704, 2)
-	bloomsky.BloomskyStructure.Storm.WindGustkmh = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*1.60934, 2)
-	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedms = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*0.44704, 2)
-	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedkmh = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*1.60934, 2)
-
-	bloomsky.BloomskyStructure.Storm.RainDailymm = toFixed(bloomsky.BloomskyStructure.Storm.RainDaily*25.4, 2)
-	bloomsky.BloomskyStructure.Storm.RainRatemm = toFixed(bloomsky.BloomskyStructure.Storm.RainRate*25.4, 2)
-	bloomsky.BloomskyStructure.Storm.Rainmm = toFixed(bloomsky.BloomskyStructure.Storm.Rainin*25.4, 2)
-	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
-
-	logDebug(funcName(), "Refresh From Body", bloomsky.BloomskyStructure.LastCall)
-
-	bloomsky.showPrettyAll()
-
-}
-
 func (bloomsky *bloomsky) GetBloomskyStruct() BloomskyStructure {
 	return bloomsky.BloomskyStructure
 }
@@ -385,4 +337,51 @@ func readFile(fileName string) []byte {
 	fileByte, err := assembly.Asset(fileName)
 	checkErr(err, funcName(), "Error reading the file", fileName)
 	return fileByte
+}
+
+//Call rest and refresh the structure
+func (bloomsky *bloomsky) refreshFromRest() {
+	tock := []string{bloomsky.token}
+
+	var headers map[string][]string
+	headers = make(map[string][]string)
+	headers["Authorization"] = tock
+
+	var retry = 0
+	for retry < 5 {
+		if err := rest.GetWithHeaders(bloomsky.url, headers); err != nil {
+			logFatal(err, funcName(), "Problem with call rest, check the URL and the secret ID in the config file", bloomsky.url)
+			retry++
+			time.Sleep(time.Minute * 5)
+		} else {
+			retry = 5
+		}
+	}
+
+	bloomsky.refreshFromBody(rest.GetBody())
+}
+
+//Refresh from body without call rest
+func (bloomsky *bloomsky) refreshFromBody(body []byte) {
+	var bloomskyArray []BloomskyStructure
+	if err := json.Unmarshal(body, &bloomskyArray); err != nil {
+		logFatal(err, funcName(), "Problem with json to struct", string(body))
+	}
+	bloomsky.BloomskyStructure = bloomskyArray[0]
+	bloomsky.BloomskyStructure.Data.TemperatureC = toFixed(((bloomsky.BloomskyStructure.Data.TemperatureF - 32.00) * 5.00 / 9.00), 2)
+	bloomsky.BloomskyStructure.Data.Pressurehpa = toFixed((bloomsky.BloomskyStructure.Data.Pressure * 33.8638815), 2)
+
+	bloomsky.BloomskyStructure.Storm.WindGustms = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*0.44704, 2)
+	bloomsky.BloomskyStructure.Storm.WindGustkmh = toFixed(bloomsky.BloomskyStructure.Storm.WindGust*1.60934, 2)
+	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedms = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*0.44704, 2)
+	bloomsky.BloomskyStructure.Storm.SustainedWindSpeedkmh = toFixed(bloomsky.BloomskyStructure.Storm.SustainedWindSpeed*1.60934, 2)
+
+	bloomsky.BloomskyStructure.Storm.RainDailymm = toFixed(bloomsky.BloomskyStructure.Storm.RainDaily*25.4, 2)
+	bloomsky.BloomskyStructure.Storm.RainRatemm = toFixed(bloomsky.BloomskyStructure.Storm.RainRate*25.4, 2)
+	bloomsky.BloomskyStructure.Storm.Rainmm = toFixed(bloomsky.BloomskyStructure.Storm.Rainin*25.4, 2)
+	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
+
+	logDebug(funcName(), "Refresh From Body", bloomsky.BloomskyStructure.LastCall)
+
+	bloomsky.showPrettyAll()
 }
