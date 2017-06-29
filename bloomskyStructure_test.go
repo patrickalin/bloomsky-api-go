@@ -532,3 +532,64 @@ func Test_bloomsky_GetTS(t *testing.T) {
 		})
 	}
 }
+
+func Test_bloomsky_Refresh(t *testing.T) {
+	type fields struct {
+		url               string
+		token             string
+		BloomskyStructure BloomskyStructure
+		mock              bool
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bloomsky := &bloomsky{
+				url:               tt.fields.url,
+				token:             tt.fields.token,
+				BloomskyStructure: tt.fields.BloomskyStructure,
+				mock:              tt.fields.mock,
+			}
+			bloomsky.Refresh()
+		})
+	}
+}
+
+func Test_bloomsky_refreshFromRest(t *testing.T) {
+	type fields struct {
+		url               string
+		token             string
+		BloomskyStructure BloomskyStructure
+		mock              bool
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bloomsky := &bloomsky{
+				url:               tt.fields.url,
+				token:             tt.fields.token,
+				BloomskyStructure: tt.fields.BloomskyStructure,
+				mock:              tt.fields.mock,
+			}
+			bloomsky.refreshFromRest()
+		})
+	}
+}
+
+func Test_bloomsky_RefreshFromBody(t *testing.T) {
+	mybloomskyTest1.Refresh()
+	mybloomskyTest2.Refresh()
+	mybloomskyTest1.GetBloomskyStruct()
+	mybloomskyTest2.GetBloomskyStruct()
+	mybloomskyTest1.GetLastCall()
+	mybloomskyTest2.GetLastCall()
+}
