@@ -593,3 +593,13 @@ func Test_bloomsky_RefreshFromBody(t *testing.T) {
 	mybloomskyTest1.GetLastCall()
 	mybloomskyTest2.GetLastCall()
 }
+
+func BenchmarkBloomskyStructureIsNight(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		mybloomsky := New("", "", true, nil)
+		mybloomsky.RefreshFromBody(readFile(testFile1))
+		if got := mybloomsky.IsNight(); got != false {
+			b.Errorf("BloomskyStructure.IsNight() = %v, want %v", got, false)
+		}
+	}
+}
