@@ -383,6 +383,4 @@ func (bloomsky *bloomsky) RefreshFromBody(body []byte) {
 	bloomsky.BloomskyStructure.LastCall = time.Now().Format("2006-01-02 15:04:05")
 
 	logDebug(funcName(), "Refresh From Body", bloomsky.BloomskyStructure.LastCall)
-
-	bloomsky.showPrettyAll()
 }
