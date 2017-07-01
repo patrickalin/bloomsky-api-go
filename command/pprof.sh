@@ -1,1 +1,1 @@
-go tool pprof -raw bloomsky-api-go.test prof.cpu
+go tool pprof bloomsky-api-go.test prof.cpu
