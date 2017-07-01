@@ -1,0 +1,1 @@
+go tool pprof -raw bloomsky-api-go.test prof.cpu
