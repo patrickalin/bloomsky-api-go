@@ -4,11 +4,11 @@
     "Storm": {
         "UVIndex": "1",
         "WindDirection": "E",
-        "RainDaily": 0,
-        "WindGust": 0,
-        "SustainedWindSpeed": 0,
-        "RainRate": 0,
-        "24hRain": 0
+        "RainDaily": 2,
+        "WindGust": 10,
+        "SustainedWindSpeed": 15,
+        "RainRate": 5,
+        "24hRain": 10
     },
     "Searchable": true,
     "DeviceName": "skyThuin",
