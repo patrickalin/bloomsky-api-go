@@ -15,6 +15,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	logFile  = "bloomskyapi.log"
+	mockFile = "mock/mock.json"
+)
+
+var (
+	log          *logrus.Logger
+	rest         http.HTTP
+	mockFileByte []byte
+)
+
 type bloomsky struct {
 	url               string
 	token             string
@@ -118,27 +129,11 @@ type Bloomsky interface {
 	RefreshFromBody(body []byte)
 }
 
-const logFile = "bloomskyapi.log"
-const mockFile = "mock/mock.json"
-
-var (
-	log          *logrus.Logger
-	rest         http.HTTP
-	mockFileByte []byte
-)
-
 // New calls bloomsky and get structurebloomsky
 func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsky {
 	initLog(l)
 
-	var b bloomsky
-
 	logDebug(funcName(), "New bloomsky structure", bloomskyURL)
-
-	b.token = bloomskyToken
-	b.url = bloomskyURL
-
-	b.mock = mock
 
 	// Read mock file
 	if mock {
@@ -148,7 +143,7 @@ func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsk
 
 	rest = http.New(log)
 
-	return &b
+	return &bloomsky{url: bloomskyURL, token: bloomskyToken, mock: mock}
 }
 
 func (bloomsky *bloomsky) Refresh() {
