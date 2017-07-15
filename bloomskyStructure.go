@@ -137,7 +137,7 @@ func New(bloomskyURL, bloomskyToken string, mock bool, l *logrus.Logger) Bloomsk
 
 	// Read mock file
 	if mock {
-		logWarn(funcName(), "Mock activated !!!", "")
+		logWarn(funcName(), "Mock activated !!!")
 		mockFileByte = readFile(mockFile)
 	}
 
@@ -297,18 +297,18 @@ func (bloomsky *bloomsky) GetTS() float64 {
 func initLog(l *logrus.Logger) {
 	if l != nil {
 		log = l
-		logDebug(funcName(), "Use the logger pass in New", "")
+		logDebug(funcName(), "Use the logger pass in New")
 		return
 	}
 
 	log = logrus.New()
 
-	logDebug(funcName(), "Create new logger", "")
+	logDebug(funcName(), "Create new logger")
 
 	log.Formatter = new(logrus.TextFormatter)
 
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0666)
-	checkErr(err, funcName(), "Failed to log to file, using default stderr", "")
+	checkErr(err, funcName(), "Failed to log to file, using default stderr")
 
 	log.Out = file
 }

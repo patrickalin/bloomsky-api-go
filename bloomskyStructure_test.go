@@ -110,50 +110,6 @@ func TestBloomskyStructure_GetNumOfFollowers(t *testing.T) {
 	}
 }
 
-/*
-func TestNewBloomsky(t *testing.T) {
-	type args struct {
-		bloomskyURL   string
-		bloomskyToken string
-	}
-	tests := []struct {
-		name string
-		args args
-		want BloomskyStructure
-	}{
-		{"Error token", args{"https://api.bloomsky.com/api/skydata/", ""}, mybloomskyTest1},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBloomsky(tt.args.bloomskyURL, tt.args.bloomskyToken); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBloomsky() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}*/
-
-/*
-func TestNewBloomskyFromBody(t *testing.T) {
-	type args struct {
-		body []byte
-	}
-	tests := []struct {
-		name string
-		args args
-		want Bloomsky
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBloomskyFromBody(tt.args.body); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBloomskyFromBody() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-*/
-
 func TestBloomskyStructure_GetIndexUV(t *testing.T) {
 	tests := []struct {
 		name   string
