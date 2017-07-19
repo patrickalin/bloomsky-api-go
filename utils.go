@@ -43,8 +43,8 @@ func logWarn(fct string, msg string, params ...string) {
 	}).Warn(msg)
 }
 
-func checkErr(err error, fct string, msg string, param string) {
+func checkErr(err error, fct string, msg string, params ...string) {
 	if err != nil {
-		logFatal(err, msg, fct, param)
+		logFatal(err, msg, fct, fmt.Sprintf(strings.Join(params[:], ",")))
 	}
 }
