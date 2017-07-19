@@ -1,4 +1,4 @@
-# BloomSky Client in Go
+# BloomSky API in Go
 
 [![Build Status](https://travis-ci.org/patrickalin/bloomsky-api-go.svg?branch=master)](https://travis-ci.org/patrickalin/bloomsky-api-go)
 ![Build size](https://reposs.herokuapp.com/?path=patrickalin/bloomsky-api-go)
