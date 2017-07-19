@@ -11,7 +11,7 @@
 
 The BloomskyStructure package provides APIs for bloomsky device.
 
-## Bloomsky Client Go
+## Bloomsky API Go
 
 If you want, I have a [runtime client](https://github.com/patrickalin/bloomsky-client-go) which uses this API. 
 
