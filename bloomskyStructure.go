@@ -346,7 +346,7 @@ func (bloomsky *bloomsky) refreshFromRest() {
 	var retry = 0
 	for retry < 5 {
 		if err := rest.GetWithHeaders(bloomsky.url, headers); err != nil {
-			logFatal(err, funcName(), "Problem with call rest, check the URL and the secret ID in the config file", bloomsky.url)
+			logFatal(err, funcName(), "Problem with call rest, check the URL and the secret ID in the config file or use the mock", bloomsky.url)
 			retry++
 			time.Sleep(time.Minute * 5)
 		} else {
