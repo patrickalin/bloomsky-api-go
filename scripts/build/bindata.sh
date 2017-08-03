@@ -1,3 +1,0 @@
-#!/bin/sh
-#go get -u github.com/jteeuwen/go-bindata/...
-go-bindata -pkg assembly -o assembly/assembly.go mock/* testcase/*
