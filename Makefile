@@ -22,7 +22,6 @@ getdeps: checks
 	@echo "Installing ineffassign" && go get -u github.com/gordonklaus/ineffassign
 	@echo "Installing errcheck" && go get -u github.com/kisielk/errcheck
 	@echo "Installing go-torch" && go get -u github.com/uber/go-torch 
-	@echo "Installing bindata" && go get -u github.com/jteeuwen/go-bindata/
 
 getFlame: 
 	@echo "Installing FlameGraph" && git clone git@github.com:brendangregg/FlameGraph.git ${GOPATH}/src/github/FlameGraph
@@ -69,7 +68,6 @@ test: verifiers build
 build:
 	@echo "build"
 	@go list -f '{{ .Name }}: {{ .Doc }}'
-	@go generate
 	@go build .
 
 coverage: build
