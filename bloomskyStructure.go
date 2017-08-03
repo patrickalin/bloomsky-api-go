@@ -6,11 +6,11 @@ package bloomskyStructure
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"math"
 	"os"
 	"time"
 
-	"github.com/patrickalin/bloomsky-api-go/assembly"
 	http "github.com/patrickalin/http-go"
 	"github.com/sirupsen/logrus"
 )
@@ -330,7 +330,7 @@ func (bloomsky *bloomsky) showPrettyAll() {
 
 //Read file and return []byte
 func readFile(fileName string) []byte {
-	fileByte, err := assembly.Asset(fileName)
+	fileByte, err := ioutil.ReadFile(fileName)
 	checkErr(err, funcName(), "Error reading the file", fileName)
 	return fileByte
 }
