@@ -9,8 +9,8 @@ import (
 var mybloomskyTest1 Bloomsky
 var mybloomskyTest2 Bloomsky
 
-const testFile1 = "testcase/test1.json"
-const testFile2 = "testcase/test2.json"
+const testFile1 = "testCase/test1.json"
+const testFile2 = "testCase/test2.json"
 
 func TestMain(m *testing.M) {
 	mybloomskyTest1 = New("", "", true, nil)
@@ -231,6 +231,24 @@ func TestBloomskyStructure_GetWindDirection(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.fields.GetWindDirection(); got != tt.want {
+				t.Errorf("BloomskyStructure.GetWindDirection() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBloomskyStructure_GetWindDirectionDeg(t *testing.T) {
+	tests := []struct {
+		name   string
+		fields Bloomsky
+		want   int
+	}{
+		{"Test1", mybloomskyTest1, 90},  //E
+		{"Test2", mybloomskyTest2, 270}, //W
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.fields.GetWindDirectionDeg(); got != tt.want {
 				t.Errorf("BloomskyStructure.GetWindDirection() = %v, want %v", got, tt.want)
 			}
 		})
