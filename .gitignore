@@ -4,3 +4,4 @@ bloomsky-api-go.test
 prof.cpu
 torch.svg
 coverage.txt
+example/example
