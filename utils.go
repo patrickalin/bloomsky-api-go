@@ -15,12 +15,12 @@ func funcName() string {
 
 func logFatal(err error, fct string, msg string, params ...string) {
 	logrus.WithFields(logrus.Fields{
-		"param": fmt.Sprintf(strings.Join(params[:], ",")),
+		"param": strings.Join(params[:], ","),
 		"error": err,
 		"fct":   fct,
 	}).Fatal(msg)
 	log.WithFields(logrus.Fields{
-		"param": fmt.Sprintf(strings.Join(params[:], ",")),
+		"param": strings.Join(params[:], ","),
 		"error": err,
 		"fct":   fct,
 	}).Fatal(msg)
@@ -28,7 +28,7 @@ func logFatal(err error, fct string, msg string, params ...string) {
 
 func logDebug(fct string, msg string, params ...string) {
 	log.WithFields(logrus.Fields{
-		"param": fmt.Sprintf(strings.Join(params[:], ",")),
+		"param": strings.Join(params[:], ","),
 		"fct":   fct,
 	}).Debug(msg)
 }
