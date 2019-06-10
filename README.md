@@ -14,13 +14,23 @@
 
 The BloomskyStructure package provides APIs for bloomsky device.
 
-## Bloomsky API Go
+## Install
 
-If you want, I have a [runtime client](https://github.com/patrickalin/bloomsky-client-go) which uses this API.
-
-In other case, execute :
+Execute :
 
     go get github.com/patrickalin/bloomsky-api-go
+
+## Usage Example : How to use API
+
+Example in /example
+
+    cd example
+    go build .
+    ./example
+
+## Usage Bloomsky Client
+
+If you want, I have a [runtime client](https://github.com/patrickalin/bloomsky-client-go) which uses this API.
 
 ## Folders / Files
 
@@ -48,13 +58,7 @@ In other case, execute :
 * utils.go : some reusable functions (error, log, ...). Not specific of this project.
 * utils_test.go : file to test utils.go
 
-## How to use API
 
-Example in /example
-
-    cd example
-    go build .
-    ./example
 
 ## How to test code
 
