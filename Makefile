@@ -34,7 +34,7 @@ vet:
 
 fmt:
 	@echo "Running $@ indentation and blanks for alignment"
-	@gofmt -d *.go
+	@gofmt -w *.go
 
 lint:
 	@echo "Running $@ style mistakes"

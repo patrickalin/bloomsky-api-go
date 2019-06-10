@@ -237,7 +237,6 @@ func (bloomsky *bloomsky) GetWindDirectionDeg() int {
 	return directionString
 }
 
-
 //GetWindGustMph returns Wind in Mph
 func (bloomsky *bloomsky) GetWindGustMph() float64 {
 	return bloomsky.BloomskyStructure.Storm.WindGust
