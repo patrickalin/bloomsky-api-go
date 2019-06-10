@@ -1,7 +1,6 @@
 package bloomskyStructure
 
 import (
-	"fmt"
 	"runtime"
 	"strings"
 
@@ -35,16 +34,16 @@ func logDebug(fct string, msg string, params ...string) {
 
 func logWarn(fct string, msg string, params ...string) {
 	logrus.WithFields(logrus.Fields{
-		"param": fmt.Sprintf(strings.Join(params[:], ",")),
+		"param": strings.Join(params[:], ","),
 	}).Warn(msg)
 	log.WithFields(logrus.Fields{
-		"param": fmt.Sprintf(strings.Join(params[:], ",")),
+		"param": strings.Join(params[:], ","),
 		"fct":   fct,
 	}).Warn(msg)
 }
 
 func checkErr(err error, fct string, msg string, params ...string) {
 	if err != nil {
-		logFatal(err, msg, fct, fmt.Sprintf(strings.Join(params[:], ",")))
+		logFatal(err, msg, fct, strings.Join(params[:], ","))
 	}
 }
