@@ -103,6 +103,7 @@ type Bloomsky interface {
 	GetNumOfFollowers() int
 	GetPressureHPa() float64
 	GetWindDirection() string
+	GetWindDirectionDeg() int
 	GetTimeStamp() time.Time
 	GetIndexUV() string
 	GetTemperatureFahrenheit() float64
@@ -217,6 +218,25 @@ func (bloomsky *bloomsky) GetPressureInHg() float64 {
 func (bloomsky *bloomsky) GetWindDirection() string {
 	return bloomsky.BloomskyStructure.Storm.WindDirection
 }
+
+//GetWindDirectionDeg returns wind direction as dagrees (0,90,180,270, ...)
+func (bloomsky *bloomsky) GetWindDirectionDeg() int {
+	cardinals := make(map[string]int)
+
+	cardinals["N"] = 0
+	cardinals["NE"] = 45
+	cardinals["E"] = 90
+	cardinals["SE"] = 135
+	cardinals["S"] = 180
+	cardinals["SW"] = 225
+	cardinals["W"] = 270
+	cardinals["NW"] = 315
+
+	directionString := cardinals[bloomsky.BloomskyStructure.Storm.WindDirection]
+
+	return directionString
+}
+
 
 //GetWindGustMph returns Wind in Mph
 func (bloomsky *bloomsky) GetWindGustMph() float64 {
