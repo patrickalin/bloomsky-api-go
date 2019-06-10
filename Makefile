@@ -1,7 +1,7 @@
 mPWD := $(shell pwd)
 GOPATH := $(shell go env GOPATH)
-PROJECT := patrickalin/http-go
-ARTEFACT := http-go
+PROJECT := patrickalin/bloomsky-api-go
+ARTEFACT := bloomsky-api-go
 
 BUILD_LDFLAGS := '$(LDFLAGS)'
 
