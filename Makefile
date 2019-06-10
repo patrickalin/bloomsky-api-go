@@ -46,7 +46,7 @@ ineffassign:
 
 cyclo:
 	@echo "Running $@"
-	@${GOPATH}/bin/gocyclo -over 100 http.go
+	@${GOPATH}/bin/gocyclo -over 100 bloomskyStructure.go
 	@${GOPATH}/bin/gocyclo -over 100 utils.go
 
 deadcode:
