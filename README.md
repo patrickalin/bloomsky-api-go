@@ -44,7 +44,15 @@ In other case, execute :
 * utils.go : some reusable functions (error, log, ...). Not specific of this project.
 * utils_test.go : file to test utils.go
 
-## How to test
+## How to use API
+
+Example in /example
+
+    cd example
+    go build .
+    ./example
+
+## How to test code
 
 make test
 
