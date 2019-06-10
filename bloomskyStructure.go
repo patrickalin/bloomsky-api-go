@@ -350,12 +350,6 @@ func toFixed(num float64, precision int) float64 {
 	return float64(round(num*output)) / output
 }
 
-// ShowPrettyAll prints to the console the JSON
-func (bloomsky *bloomsky) showPrettyAll() {
-	out, err := json.Marshal(bloomsky)
-	checkErr(err, funcName(), "Error with parsing Json", string(out))
-}
-
 //Read file and return []byte
 func readFile(fileName string) []byte {
 	fileByte, err := ioutil.ReadFile(fileName)
