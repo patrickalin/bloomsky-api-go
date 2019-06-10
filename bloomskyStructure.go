@@ -367,8 +367,7 @@ func readFile(fileName string) []byte {
 func (bloomsky *bloomsky) refreshFromRest() {
 	tock := []string{bloomsky.token}
 
-	var headers map[string][]string
-	headers = make(map[string][]string)
+	var headers map[string][]string = make(map[string][]string)
 	headers["Authorization"] = tock
 
 	var retry = 0
