@@ -60,9 +60,9 @@ type BloomskyStructure struct {
 
 // BloomskyStormStructure represents the structure STORM of the JSON return by the API
 type BloomskyStormStructure struct {
-	UVIndex               string  `json:"UVIndex"`
-	WindDirection         string  `json:"WindDirection"`
-	WindGust              float64 `json:"WindGust"`
+	UVIndex               string      `json:"UVIndex"`
+	WindDirection         interface{} `json:"WindDirection,int"`
+	WindGust              float64     `json:"WindGust"`
 	WindGustms            float64
 	WindGustkmh           float64
 	SustainedWindSpeed    float64 `json:"SustainedWindSpeed"`
@@ -216,11 +216,17 @@ func (bloomsky *bloomsky) GetPressureInHg() float64 {
 
 //GetWindDirection returns wind direction (N,S,W,E, ...)
 func (bloomsky *bloomsky) GetWindDirection() string {
-	return bloomsky.BloomskyStructure.Storm.WindDirection
+	switch bloomsky.BloomskyStructure.Storm.WindDirection.(type) {
+	case string:
+		return bloomsky.BloomskyStructure.Storm.WindDirection.(string)
+	default:
+		return "Unknow"
+	}
 }
 
 //GetWindDirectionDeg returns wind direction as dagrees (0,90,180,270, ...)
 func (bloomsky *bloomsky) GetWindDirectionDeg() int {
+
 	cardinals := make(map[string]int)
 
 	cardinals["N"] = 0
@@ -232,9 +238,12 @@ func (bloomsky *bloomsky) GetWindDirectionDeg() int {
 	cardinals["W"] = 270
 	cardinals["NW"] = 315
 
-	directionString := cardinals[bloomsky.BloomskyStructure.Storm.WindDirection]
-
-	return directionString
+	switch bloomsky.BloomskyStructure.Storm.WindDirection.(type) {
+	case string:
+		return cardinals[bloomsky.BloomskyStructure.Storm.WindDirection.(string)]
+	default:
+		return 9999
+	}
 }
 
 //GetWindGustMph returns Wind in Mph

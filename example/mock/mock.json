@@ -3,7 +3,7 @@
     "CityName": "Thuin",
     "Storm": {
         "UVIndex": "1",
-        "WindDirection": "E",
+        "WindDirection": "N",
         "RainDaily": 2,
         "WindGust": 10,
         "SustainedWindSpeed": 15,

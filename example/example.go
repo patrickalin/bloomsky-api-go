@@ -15,10 +15,13 @@ func main() {
 	// Refresh Data
 	mybloomskyExample.Refresh()
 	// use Getter
-	fmt.Println("From mock file :> ", mybloomskyExample.GetDeviceID())
+	fmt.Println("DeviceId from mock file :> ", mybloomskyExample.GetDeviceID())
 	// or GetStructure
 	mybloomskyExampleStruct := mybloomskyExample.GetBloomskyStruct()
-	fmt.Println("From bloomsky API :> ", mybloomskyExampleStruct.DeviceID)
+	fmt.Println("DeviceId from bloomsky API :> ", mybloomskyExampleStruct.DeviceID)
+	fmt.Println("Win direction from Struct bloomsky API :> ", mybloomskyExampleStruct.Storm.WindDirection)
+	fmt.Println("Win direction degree from API bloomsky API :> ", mybloomskyExample.GetWindDirectionDeg())
+	fmt.Println("Win direction from API bloomsky API :> ", mybloomskyExample.GetWindDirection())
 	// Output:
 	// 442C05954A59
 	// 442C05954A59
