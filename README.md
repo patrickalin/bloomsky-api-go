@@ -1,5 +1,6 @@
 # BloomSky API in Go
 
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![Build Status](https://travis-ci.org/patrickalin/bloomsky-api-go.svg?branch=master)](https://travis-ci.org/patrickalin/bloomsky-api-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/patrickalin/bloomsky-api-go)](https://goreportcard.com/report/github.com/patrickalin/bloomsky-api-go)
 [![Coverage Status](https://coveralls.io/repos/github/patrickalin/bloomsky-api-go/badge.svg)](https://coveralls.io/github/patrickalin/bloomsky-api-go)
