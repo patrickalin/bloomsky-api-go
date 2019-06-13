@@ -1,8 +1,8 @@
 # BloomSky API in Go
 
-[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)]
 [![Build Status](https://travis-ci.org/patrickalin/bloomsky-api-go.svg?branch=master)](https://travis-ci.org/patrickalin/bloomsky-api-go)
-[![Repo Size](https://img.shields.io/github/repo-size/patrickalin/bloomsky-api-go.svg)]
+![Repo Size](https://img.shields.io/github/repo-size/patrickalin/bloomsky-api-go.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/patrickalin/bloomsky-api-go)](https://goreportcard.com/report/github.com/patrickalin/bloomsky-api-go)
 [![Coverage Status](https://coveralls.io/repos/github/patrickalin/bloomsky-api-go/badge.svg)](https://coveralls.io/github/patrickalin/bloomsky-api-go)
 [![GoDoc](http://godoc.org/github.com/patrickalin/bloomsky-api-go?status.svg)](http://godoc.org/github.com/patrickalin/bloomsky-api-go)
